@@ -1,0 +1,1086 @@
+{
+    "info": {
+        "_postman_id": "b2145433-6606-48c7-8e10-d9382fd3f16a",
+        "name": "PhotoComp API Auth",
+        "description": "Collection for testing the authentication endpoints of the PhotoComp API.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "_exporter_id": "42793923",
+        "_collection_link": "https://photocomp.postman.co/workspace/PhotoComp-Workspace~5d02fc07-cdb4-4db6-a78d-2516f90a9e43/collection/42793923-b2145433-6606-48c7-8e10-d9382fd3f16a?action=share&source=collection_link&creator=42793923"
+    },
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Register User",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Parse the response",
+                                    "var jsonData = pm.response.json();",
+                                    "",
+                                    "// Store token in environment variable for subsequent requests",
+                                    "if (jsonData.data && jsonData.data.token) {",
+                                    "    pm.environment.set(\"authToken\", jsonData.data.token);",
+                                    "}",
+                                    "",
+                                    "// Test for successful registration (201 Created)",
+                                    "pm.test(\"Status code is 201\", function() {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "// Test for successful response structure",
+                                    "pm.test(\"Response has the correct structure\", function() {",
+                                    "    pm.expect(jsonData).to.be.an('object');",
+                                    "    pm.expect(jsonData.status).to.eql('success');",
+                                    "    pm.expect(jsonData.data).to.be.an('object');",
+                                    "    pm.expect(jsonData.data.user).to.be.an('object');",
+                                    "    pm.expect(jsonData.data.token).to.be.a('string');",
+                                    "});",
+                                    "",
+                                    "// Test that password is not returned in the response",
+                                    "pm.test(\"Password is not returned in the response\", function() {",
+                                    "    pm.expect(jsonData.data.user.password).to.be.undefined;",
+                                    "});",
+                                    "",
+                                    "// Test that user data matches what was sent",
+                                    "pm.test(\"User data matches registration data\", function() {",
+                                    "    var requestData = JSON.parse(pm.request.body.raw);",
+                                    "    pm.expect(jsonData.data.user.email).to.eql(requestData.email);",
+                                    "    pm.expect(jsonData.data.user.firstName).to.eql(requestData.firstName);",
+                                    "    pm.expect(jsonData.data.user.lastName).to.eql(requestData.lastName);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"Password123\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "register"]
+                        },
+                        "description": "Register a new user with the system."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Register User - Existing Email",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Parse the response",
+                                    "var jsonData = pm.response.json();",
+                                    "",
+                                    "// Test for conflict status code (409)",
+                                    "pm.test(\"Status code is 409 for existing email\", function() {",
+                                    "    pm.response.to.have.status(409);",
+                                    "});",
+                                    "",
+                                    "// Test for error response structure",
+                                    "pm.test(\"Response has the correct error structure\", function() {",
+                                    "    pm.expect(jsonData).to.be.an('object');",
+                                    "    pm.expect(jsonData.status).to.eql('error');",
+                                    "    pm.expect(jsonData.message).to.include('Email already in use');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"Password123\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "register"]
+                        },
+                        "description": "Attempt to register a user with an email that already exists."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Register User - Invalid Email",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Parse the response",
+                                    "var jsonData = pm.response.json();",
+                                    "",
+                                    "// Test for bad request status code (400)",
+                                    "pm.test(\"Status code is 400 for invalid email\", function() {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "// Test for error response structure",
+                                    "pm.test(\"Response has the correct error structure\", function() {",
+                                    "    pm.expect(jsonData).to.be.an('object');",
+                                    "    pm.expect(jsonData.status).to.eql('error');",
+                                    "    pm.expect(jsonData.message).to.include('Invalid email format');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"invalid-email\",\n    \"password\": \"Password123\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "register"]
+                        },
+                        "description": "Attempt to register a user with an invalid email format."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Register User - Weak Password",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Parse the response",
+                                    "var jsonData = pm.response.json();",
+                                    "",
+                                    "// Test for bad request status code (400)",
+                                    "pm.test(\"Status code is 400 for weak password\", function() {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "// Test for error response structure",
+                                    "pm.test(\"Response has the correct error structure\", function() {",
+                                    "    pm.expect(jsonData).to.be.an('object');",
+                                    "    pm.expect(jsonData.status).to.eql('error');",
+                                    "    pm.expect(jsonData.message).to.include('at least 8 characters');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"user2@example.com\",\n    \"password\": \"weak\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "register"]
+                        },
+                        "description": "Attempt to register a user with a password that's too short."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Register User - Missing Fields",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Parse the response",
+                                    "var jsonData = pm.response.json();",
+                                    "",
+                                    "// Test for bad request status code (400)",
+                                    "pm.test(\"Status code is 400 for missing fields\", function() {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "// Test for error response structure",
+                                    "pm.test(\"Response has the correct error structure\", function() {",
+                                    "    pm.expect(jsonData).to.be.an('object');",
+                                    "    pm.expect(jsonData.status).to.eql('error');",
+                                    "    pm.expect(jsonData.message).to.include('required');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"user3@example.com\",\n    \"firstName\": \"John\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "register"]
+                        },
+                        "description": "Attempt to register a user with missing required fields."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login User",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Parse the response",
+                                    "var jsonData = pm.response.json();",
+                                    "const responseJSON = pm.response.json();",
+                                    "pm.environment.set(\"active_userToken\", responseJSON.data.token);",
+                                    "",
+                                    "// Store token in environment variable for subsequent requests",
+                                    "if (jsonData.data && jsonData.data.token) {",
+                                    "    pm.environment.set(\"authToken\", jsonData.data.token);",
+                                    "}",
+                                    "",
+                                    "// Test for successful login (200 OK)",
+                                    "pm.test(\"Status code is 200\", function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "// Test for successful response structure",
+                                    "pm.test(\"Response has the correct structure\", function() {",
+                                    "    pm.expect(jsonData).to.be.an('object');",
+                                    "    pm.expect(jsonData.status).to.eql('success');",
+                                    "    pm.expect(jsonData.data).to.be.an('object');",
+                                    "    pm.expect(jsonData.data.user).to.be.an('object');",
+                                    "    pm.expect(jsonData.data.token).to.be.a('string');",
+                                    "});",
+                                    "",
+                                    "// Test that password is not returned in the response",
+                                    "pm.test(\"Password is not returned in the response\", function() {",
+                                    "    pm.expect(jsonData.data.user.password).to.be.undefined;",
+                                    "});",
+                                    "",
+                                    "// Test that user data matches what was expected",
+                                    "pm.test(\"User email matches login credentials\", function() {",
+                                    "    var requestData = JSON.parse(pm.request.body.raw);",
+                                    "    pm.expect(jsonData.data.user.email).to.eql(requestData.email);",
+                                    "});"
+                                ],
+                                "type": "text/javascript",
+                                "packages": {}
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"Password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "login"]
+                        },
+                        "description": "Log in an existing user to get an auth token."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login User - Invalid Credentials",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Parse the response",
+                                    "var jsonData = pm.response.json();",
+                                    "",
+                                    "// Test for unauthorized status code (401)",
+                                    "pm.test(\"Status code is 401 for invalid credentials\", function() {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});",
+                                    "",
+                                    "// Test for error response structure",
+                                    "pm.test(\"Response has the correct error structure\", function() {",
+                                    "    pm.expect(jsonData).to.be.an('object');",
+                                    "    pm.expect(jsonData.status).to.eql('error');",
+                                    "    pm.expect(jsonData.message).to.include('Invalid email or password');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"WrongPassword123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "login"]
+                        },
+                        "description": "Attempt to log in with incorrect password."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login User - Non-Existent User",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Parse the response",
+                                    "var jsonData = pm.response.json();",
+                                    "",
+                                    "// Test for unauthorized status code (401)",
+                                    "pm.test(\"Status code is 401 for non-existent user\", function() {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});",
+                                    "",
+                                    "// Test for error response structure",
+                                    "pm.test(\"Response has the correct error structure\", function() {",
+                                    "    pm.expect(jsonData).to.be.an('object');",
+                                    "    pm.expect(jsonData.status).to.eql('error');",
+                                    "    pm.expect(jsonData.message).to.include('Invalid email or password');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"nonexistent@example.com\",\n    \"password\": \"Password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "login"]
+                        },
+                        "description": "Attempt to log in with an email that doesn't exist in the system."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login User - Missing Fields",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Parse the response",
+                                    "var jsonData = pm.response.json();",
+                                    "",
+                                    "// Test for bad request status code (400)",
+                                    "pm.test(\"Status code is 400 for missing fields\", function() {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "// Test for error response structure",
+                                    "pm.test(\"Response has the correct error structure\", function() {",
+                                    "    pm.expect(jsonData).to.be.an('object');",
+                                    "    pm.expect(jsonData.status).to.eql('error');",
+                                    "    pm.expect(jsonData.message).to.include('required');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"user@example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "login"]
+                        },
+                        "description": "Attempt to log in with missing required fields."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Root Endpoint Check",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test for successful status code (200 OK)",
+                                    "pm.test(\"Status code is 200\", function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "// Test that the API server is running",
+                                    "pm.test(\"API server is running\", function() {",
+                                    "    pm.expect(pm.response.text()).to.include('PhotoComp API is running');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/",
+                            "host": ["{{baseUrl}}"],
+                            "path": [""]
+                        },
+                        "description": "Check if the API server is running by accessing the root endpoint."
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Auth operations for user registration and login."
+        },
+        {
+            "name": "Organizations",
+            "item": [
+                {
+                    "name": "Positive Tests",
+                    "item": [
+                        {
+                            "name": "Create new org",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"Response status code is 201\", function () {",
+                                            "  pm.expect(pm.response.to.have.status(201));",
+                                            "});",
+                                            "",
+                                            "",
+                                            "pm.test(\"Response has the required fields\", function () {",
+                                            "    const responseData = pm.response.json();",
+                                            "    ",
+                                            "    pm.expect(responseData).to.be.an('object');",
+                                            "    pm.expect(responseData.message).to.exist;",
+                                            "});",
+                                            "",
+                                            "",
+                                            "pm.test(\"Message is a non-empty string\", function () {",
+                                            "    const responseData = pm.response.json();",
+                                            "    ",
+                                            "    pm.expect(responseData.message).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Value should not be empty\");",
+                                            "});",
+                                            "",
+                                            "",
+                                            "pm.test(\"Content-Type header is application/json\", function () {",
+                                            "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+                                            "});",
+                                            "",
+                                            "",
+                                            "pm.test(\"Response body is not empty\", function () {",
+                                            "  const responseData = pm.response.json();",
+                                            "  ",
+                                            "  pm.expect(responseData).to.not.be.empty;",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript",
+                                        "packages": {}
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"FitRight\",\n    \"logoUrl\": \"https://images.app.goo.gl/k7Yc6Yb6ebeaB9HB8\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/organizations/",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["organizations", ""]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Updating an existing org",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"Status code is 200\", function () {",
+                                            "    pm.response.to.have.status(200);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response time is less than 200ms\", function () {",
+                                            "    pm.expect(pm.response.responseTime).to.be.below(200);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response body has status message\", function () {",
+                                            "    pm.expect(pm.response.json().status).to.eql(\"Updated organization!\");",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response body has organization details\", function () {",
+                                            "    pm.expect(pm.response.json().data.org).to.have.property('name', 'Culvers');",
+                                            "    pm.expect(pm.response.json().data.org).to.have.property('description', 'Butter Burgers');",
+                                            "    pm.expect(pm.response.json().data.org).to.have.property('contactEmail', 'culvers@culvers.com');",
+                                            "    pm.expect(pm.response.json().data.org).to.have.property('website', 'https://www.culvers.com/');",
+                                            "    pm.expect(pm.response.json().data.org).to.have.property('logoUrl', 'https://styleguide.culvers.com/brand-sty...');",
+                                            "});",
+                                            ""
+                                        ],
+                                        "type": "text/javascript",
+                                        "packages": {}
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "PATCH",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"Culvers\",\n    \"description\": \"Butter Burgers\",\n    \"contactEmail\": \"culvers@culvers.com\",\n    \"website\": \"https://www.culvers.com/\",\n    \"logoUrl\": \"https://styleguide.culvers.com/brand-styles/logo-usage\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/organizations/",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["organizations", ""]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get all orgs of user",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "// Test for status code",
+                                            "pm.test(\"Status code is 200\", function () {",
+                                            "    pm.response.to.have.status(200);",
+                                            "});",
+                                            "",
+                                            "// Test for response time",
+                                            "pm.test(\"Response time is less than 200ms\", function () {",
+                                            "    pm.expect(pm.response.responseTime).to.be.below(200);",
+                                            "});",
+                                            "",
+                                            "// Test for content type",
+                                            "pm.test(\"Content type is application/json\", function () {",
+                                            "    pm.response.to.have.header(\"Content-Type\", \"application/json\");",
+                                            "});",
+                                            "",
+                                            "// Test for organization names in the response",
+                                            "pm.test(\"Organization names are not empty\", function () {",
+                                            "    pm.expect(responseBody.org).to.be.an('array').that.is.not.empty;",
+                                            "    responseBody.org.map(org => {",
+                                            "        pm.expect(org.organizationName).to.be.a('string');",
+                                            "    });",
+                                            "});",
+                                            ""
+                                        ],
+                                        "type": "text/javascript",
+                                        "packages": {}
+                                    }
+                                }
+                            ],
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            },
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/organizations/",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["organizations", ""]
+                                }
+                            },
+                            "response": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Negative Tests",
+                    "item": [
+                        {
+                            "name": "Create duplicate org",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"Response status code is 409\", function () {",
+                                            "    pm.expect(pm.response.code).to.equal(409);",
+                                            "});",
+                                            "",
+                                            "",
+                                            "pm.test(\"Response has the required fields - status and message\", function () {",
+                                            "    const responseData = pm.response.json();",
+                                            "    ",
+                                            "    pm.expect(responseData).to.be.an('object');",
+                                            "    pm.expect(responseData).to.have.property('status');",
+                                            "    pm.expect(responseData).to.have.property('message');",
+                                            "});",
+                                            "",
+                                            "",
+                                            "pm.test(\"Status is a non-empty string\", function () {",
+                                            "    const responseData = pm.response.json();",
+                                            "    ",
+                                            "    pm.expect(responseData).to.be.an('object');",
+                                            "    pm.expect(responseData.status).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Status should not be empty\");",
+                                            "});",
+                                            "",
+                                            "",
+                                            "pm.test(\"Message is a non-empty string\", function () {",
+                                            "    const responseData = pm.response.json();",
+                                            "    ",
+                                            "    pm.expect(responseData.message).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Value should not be empty\");",
+                                            "});",
+                                            "",
+                                            "",
+                                            "pm.test(\"Content-Type header is application/json\", function () {",
+                                            "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript",
+                                        "packages": {}
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"KFC\",\n    \"logoUrl\": \"https://images.app.goo.gl/k7Yc6Yb6ebeaB9HB8\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/organizations/",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["organizations", ""]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Create org with incomplete details",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"Status code is 400\", function () {",
+                                            "    pm.response.to.have.status(400);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response time is less than 200ms\", function () {",
+                                            "    pm.expect(pm.response.responseTime).to.be.lessThan(200);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response body has the expected properties\", function () {",
+                                            "    pm.expect(pm.response.json()).to.have.keys('status', 'message');",
+                                            "    pm.expect(pm.response.json().status).to.equal('error');",
+                                            "    pm.expect(pm.response.json().message).to.equal('Name and logoUrl are required');",
+                                            "});",
+                                            ""
+                                        ],
+                                        "type": "text/javascript",
+                                        "packages": {}
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"Dome\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/organizations/",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["organizations", ""]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Create org with invalid URL",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"Status code is 400\", function () {",
+                                            "    pm.response.to.have.status(400);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response time is less than 500ms\", function () {",
+                                            "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Verify response body for error message\", function () {",
+                                            "    pm.expect(pm.response.json().status).to.equal(\"error\");",
+                                            "    pm.expect(pm.response.json().message).to.equal(\"Invalid URL\");",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript",
+                                        "packages": {}
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"Dome\",\n    \"logoUrl\": \"invalid\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/organizations/",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["organizations", ""]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Updating without org name",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "// Test for response status code",
+                                            "pm.test(\"Status code is 400\", function () {",
+                                            "    pm.response.to.have.status(400);",
+                                            "});",
+                                            "",
+                                            "// Test for response time",
+                                            "pm.test(\"Response time is less than 200ms\", function () {",
+                                            "    pm.expect(pm.response.responseTime).to.be.lessThan(200);",
+                                            "});",
+                                            "",
+                                            "// Test for response body properties",
+                                            "pm.test(\"Response body has expected properties\", function () {",
+                                            "    pm.response.to.have.jsonBody('status');",
+                                            "    pm.response.to.have.jsonBody('message');",
+                                            "});",
+                                            ""
+                                        ],
+                                        "type": "text/javascript",
+                                        "packages": {}
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "PATCH",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"description\": \"Butter Burgers\",\n    \"contactEmail\": \"culvers@culvers.com\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/organizations/",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["organizations", ""]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Updating a non-existing org",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"Status code is 400\", function () {",
+                                            "    pm.response.to.have.status(400);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response time is less than 100ms\", function () {",
+                                            "    pm.expect(pm.response.responseTime).to.be.lessThan(100);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response body has correct structure\", function () {",
+                                            "    pm.response.to.have.jsonBody(\"status\", \"error\");",
+                                            "    pm.response.to.have.jsonBody(\"message\", \"No Organizations found!\");",
+                                            "});",
+                                            ""
+                                        ],
+                                        "type": "text/javascript",
+                                        "packages": {}
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "PATCH",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"Next\",\n    \"description\": \"Next JS\",\n    \"contactEmail\": \"next@js.com\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/organizations/",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["organizations", ""]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Updating an existing org with invalid URL",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "// Test for status code",
+                                            "pm.test(\"Status code is 400\", function () {",
+                                            "    pm.response.to.have.status(400);",
+                                            "});",
+                                            "",
+                                            "// Test for response body properties",
+                                            "pm.test(\"Response body has status and message properties\", function () {",
+                                            "    pm.response.to.have.jsonBody('status');",
+                                            "    pm.response.to.have.jsonBody('message');",
+                                            "    pm.expect(pm.response.json().status).to.equal(\"error\");",
+                                            "    pm.expect(pm.response.json().message).to.equal(\"Invalid URL\");",
+                                            "});",
+                                            ""
+                                        ],
+                                        "type": "text/javascript",
+                                        "packages": {}
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "PATCH",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"Culvers\",\n    \"description\": \"Butter Burgers\",\n    \"contactEmail\": \"culvers@culvers.com\",\n    \"website\": \"invalid\",\n    \"logoUrl\": \"https://styleguide.culvers.com/brand-styles/logo-usage\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/organizations/",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["organizations", ""]
+                                }
+                            },
+                            "response": []
+                        }
+                    ],
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "packages": {},
+                                "exec": [""]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "packages": {},
+                                "exec": [""]
+                            }
+                        }
+                    ]
+                }
+            ],
+            "auth": {
+                "type": "bearer",
+                "bearer": [
+                    {
+                        "key": "token",
+                        "value": "{{authToken}}",
+                        "type": "string"
+                    }
+                ]
+            },
+            "event": [
+                {
+                    "listen": "prerequest",
+                    "script": {
+                        "type": "text/javascript",
+                        "packages": {},
+                        "exec": [""]
+                    }
+                },
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "packages": {},
+                        "exec": [""]
+                    }
+                }
+            ]
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "// Set default baseUrl if not already set",
+                    "if (!pm.environment.get(\"baseUrl\")) {",
+                    "    pm.environment.set(\"baseUrl\", \"http://localhost:3000\");",
+                    "}"
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [""]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000",
+            "type": "string"
+        }
+    ]
+}
