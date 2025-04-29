@@ -103,22 +103,22 @@ export class S3Service {
     /**
      * Gets a pre-signed URL for accessing a file in S3
      * @param s3Key The S3 key of the file
-     * @param expiresIn The expiration time in seconds (default: 604800 = 7 days, the maximum)
+     * @param expiresIn The expiration time in seconds (default: 10 seconds)
      * @returns The pre-signed URL
      */
-    async getLogoPreSignedUrl(s3Key: string, expiresIn: number = 604800): Promise<string> {
+    async getLogoPreSignedUrl(s3Key: string, expiresIn: number = 10): Promise<string> {
         return this.s3Repository.getPreSignedUrl(s3Key, expiresIn);
     }
 
     /**
      * Gets pre-signed URLs for multiple files in S3
      * @param s3Keys Object mapping size names to S3 keys
-     * @param expiresIn The expiration time in seconds (default: 604800 = 7 days, the maximum)
+     * @param expiresIn The expiration time in seconds (default: 10 seconds)
      * @returns Object mapping size names to pre-signed URLs
      */
     async getMultiplePreSignedUrls(
         s3Keys: Record<string, string>,
-        expiresIn: number = 604800
+        expiresIn: number = 10
     ): Promise<PhotoSizes> {
         try {
             // Get all key values from the s3Keys object
@@ -147,13 +147,13 @@ export class S3Service {
      * Gets a pre-signed URL for downloading a file from S3
      * @param s3Key The S3 key of the file
      * @param filename The suggested filename for the download
-     * @param expiresIn The expiration time in seconds (default: 604800 = 7 days, the maximum)
+     * @param expiresIn The expiration time in seconds (default: 10 seconds)
      * @returns The pre-signed URL with content-disposition header set
      */
     async getDownloadUrl(
         s3Key: string,
         filename: string,
-        expiresIn: number = 604800
+        expiresIn: number = 10
     ): Promise<string> {
         return this.s3Repository.getDownloadPreSignedUrl(s3Key, filename, expiresIn);
     }
