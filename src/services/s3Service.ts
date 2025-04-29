@@ -206,4 +206,66 @@ export class S3Service {
             throw new AppError(`Failed to upload logo to S3: ${(error as Error).message}`, 500);
         }
     }
+
+    // src/services/s3Service.ts - Add utility method to extract S3 key from URL
+
+    /**
+     * Utility method to extract an S3 key from a pre-signed URL
+     * @param url The pre-signed URL to extract the key from
+     * @returns The extracted S3 key or null if extraction fails
+     */
+    async extractS3KeyFromUrl(url: string): Promise<string | null> {
+        try {
+            if (!url || url.trim() === '') {
+                return null;
+            }
+
+            // Parse the URL
+            const urlParts = new URL(url);
+
+            // Extract just the path without query parameters
+            const path = urlParts.pathname;
+
+            // Remove leading slash
+            const s3Key = path.startsWith('/') ? path.substring(1) : path;
+
+            if (!s3Key || s3Key.trim() === '') {
+                return null;
+            }
+
+            return s3Key;
+        } catch (error) {
+            logger.error('Error extracting S3 key from URL:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Refresh a pre-signed URL - handles various input cases
+     * @param url The existing URL to refresh
+     * @param s3Key The S3 key if known
+     * @returns A fresh pre-signed URL or null if refresh fails
+     */
+    async refreshPresignedUrl(url?: string, s3Key?: string): Promise<string | null> {
+        try {
+            // Case 1: S3 key is provided - use it directly
+            if (s3Key) {
+                return await this.getLogoPreSignedUrl(s3Key);
+            }
+
+            // Case 2: URL is provided but no S3 key - extract key from URL
+            if (url) {
+                const extractedKey = await this.extractS3KeyFromUrl(url);
+                if (extractedKey) {
+                    return await this.getLogoPreSignedUrl(extractedKey);
+                }
+            }
+
+            // Failed to refresh URL
+            return null;
+        } catch (error) {
+            logger.error('Error refreshing pre-signed URL:', error);
+            return null;
+        }
+    }
 }
