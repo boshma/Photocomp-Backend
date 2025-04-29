@@ -17,7 +17,7 @@ import { orgPhotosRouter } from './controllers/orgPhotoController';
 import { photoTagsRouter } from './controllers/photoTagsController';
 import { userRouter } from './controllers/userController';
 
-// Load environment variables 
+// Load environment variables
 dotenv.config();
 
 const app = express();
