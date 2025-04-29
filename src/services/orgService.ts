@@ -11,6 +11,7 @@ import {
 } from '../models/Organizations';
 import { AppError } from '../middleware/errorHandler';
 import { UserRole } from '../models/User';
+import { logger } from '../util/logger';
 
 export class OrgService {
     private orgRepository: OrgRepository;
